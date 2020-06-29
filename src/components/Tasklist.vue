@@ -10,14 +10,18 @@
       <hr class="my-4">
 
       <b-list-group>
-        <b-list-group-item v-for="(item, index) in list" :key="index" @click="checkTask(index)">
-          <input type="checkbox" :id="index" :checked="item.done" />
-          <label :for="index" :class="item.done? 'crossed' :''">{{ item.task }}</label>
-        </b-list-group-item>
+        <Task v-for="(item, index) in list"
+        :key="index"
+        :index="index"
+        :task="item.task"
+        :done="item.done"
+        :deleteTask="deleteFinishedTask"
+        :enterChange="enterChange"
+        :checkTask="checkTask" />
       </b-list-group>
 
-      <form  @submit.prevent="submitNewTask()">
-        <b-form-input v-model="x" placeholder="Enter new task"></b-form-input>
+      <form @submit.prevent="submitNewTask()">
+        <b-form-input v-model="taskName" placeholder="Enter new task"></b-form-input>
       </form>
     </b-jumbotron>
   </div>
@@ -25,42 +29,44 @@
 
 <script>
 import { mapState, mapActions } from 'vuex'
+import Task from './Task'
 export default {
+  components: {
+    Task
+  },
   data () {
     return {
-      taskIndex: null,
-      x: ''
+      taskName: ''
     }
   },
   computed: {
     ...mapState(['list'])
   },
   methods: {
-    ...mapActions(['addTask']),
-    checkTask (index) {
-      this.taskIndex = index
-      this.list[this.taskIndex].done = !this.list[this.taskIndex].done
-    },
+    ...mapActions(['addTask', 'deleteTask', 'changeTask', 'checkTask']),
     submitNewTask () {
       const newTask = {
-        task: this.x,
+        task: this.taskName,
         done: false
       }
       this.addTask(newTask)
-      this.x = ''
+      this.taskName = ''
+    },
+    checkTask (index) {
+      this.list[index].done = !this.list[index].done
+    },
+    deleteFinishedTask (index) {
+      this.deleteTask(index)
+    },
+    enterChange (index, changedTask) {
+      this.changeTask({ index, changedTask })
     }
   }
 }
 </script>
 
 <style scoped>
-  .crossed {
-    text-decoration: line-through;
-  }
-  input[type='checkbox'] {
-    margin-right: 10px;
-  }
-  .list-group-item:hover {
-    background-color: yellow;
+  .list-group + form {
+    margin-top: 15px;
   }
 </style>
